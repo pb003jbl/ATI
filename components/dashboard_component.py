@@ -252,40 +252,80 @@ def render_main_dashboard(df):
     if 'created_at' in df.columns and 'status' in df.columns:
         st.subheader("Trend Analysis")
         
-        # Group tickets by month
-        df['month'] = df['created_at'].dt.strftime('%Y-%m')
-        monthly_tickets = df.groupby('month').size().reset_index(name='count')
-        
-        if len(monthly_tickets) > 1:
-            # Create trend line
-            fig = px.line(
-                monthly_tickets, 
-                x='month', 
-                y='count',
-                title='Monthly Ticket Volume Trend',
-                markers=True
-            )
+        try:
+            # Group tickets by month - safer approach
+            # Create a copy to avoid modifying the original dataframe
+            trend_df = df.copy()
             
-            # Add trendline
-            fig.add_traces(
-                px.scatter(
-                    monthly_tickets, 
-                    x='month', 
-                    y='count', 
-                    trendline='ols'
-                ).data[1]
-            )
+            # Ensure created_at is datetime
+            trend_df['created_at'] = pd.to_datetime(trend_df['created_at'], errors='coerce')
             
-            # Update layout
-            fig.update_layout(
-                xaxis_title="Month",
-                yaxis_title="Ticket Count",
-                hovermode="x unified"
-            )
+            # Generate month labels and numeric months for calculations
+            trend_df['month_str'] = trend_df['created_at'].dt.strftime('%Y-%m')
+            trend_df['month_idx'] = range(len(trend_df))  # Simple index for trendline
             
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("More time-series data needed for trend analysis")
+            # Group by month and get counts
+            monthly_counts = trend_df.groupby('month_str').size().reset_index(name='count')
+            monthly_counts['idx'] = range(len(monthly_counts))  # Add index for trendline
+            
+            if len(monthly_counts) > 1:
+                # Create basic chart
+                fig = go.Figure()
+                
+                # Add the line for ticket counts
+                fig.add_trace(go.Scatter(
+                    x=monthly_counts['month_str'], 
+                    y=monthly_counts['count'],
+                    mode='lines+markers',
+                    name='Ticket Count',
+                    line=dict(color='#2196F3', width=3),
+                    marker=dict(size=8)
+                ))
+                
+                # Calculate trendline manually
+                x = monthly_counts['idx']
+                y = monthly_counts['count']
+                
+                if len(x) > 1:  # Need at least 2 points for a line
+                    z = np.polyfit(x, y, 1)
+                    p = np.poly1d(z)
+                    
+                    # Add the trendline
+                    fig.add_trace(go.Scatter(
+                        x=monthly_counts['month_str'],
+                        y=p(x),
+                        mode='lines',
+                        name='Trend',
+                        line=dict(color='red', width=2, dash='dash')
+                    ))
+                
+                # Update layout
+                fig.update_layout(
+                    title='Monthly Ticket Volume Trend',
+                    xaxis_title="Month",
+                    yaxis_title="Ticket Count",
+                    hovermode="x unified"
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("More time-series data needed for trend analysis")
+        except Exception as e:
+            st.error(f"Unable to generate trend analysis: {str(e)}")
+            # Provide simplified chart as fallback
+            if 'created_at' in df.columns:
+                try:
+                    # Simple count by month
+                    trend_df = df.copy()
+                    trend_df['created_at'] = pd.to_datetime(trend_df['created_at'], errors='coerce')
+                    trend_df['month'] = trend_df['created_at'].dt.strftime('%Y-%m')
+                    monthly_counts = trend_df.groupby('month').size().reset_index(name='count')
+                    
+                    # Simple bar chart
+                    fig = px.bar(monthly_counts, x='month', y='count', title='Tickets by Month')
+                    st.plotly_chart(fig, use_container_width=True)
+                except:
+                    st.info("Could not generate trend visualization with the current data")
     
     # Data quality section
     st.subheader("Data Quality Summary")
@@ -315,7 +355,7 @@ def render_main_dashboard(df):
         title='Data Completeness by Field',
         color='Completeness (%)',
         color_continuous_scale=px.colors.sequential.Blues,
-        text_auto='.1f'
+        text_auto=True
     )
     
     fig.update_layout(yaxis_range=[0, 100])
