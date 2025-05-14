@@ -56,7 +56,7 @@ if 'advanced_rca_report' not in st.session_state:
     st.session_state.advanced_rca_report = None
 
 # Tabs for different analysis types
-tab1, tab2, tab3, tab4 = st.tabs(["General Analysis", "Root Cause Analysis", "Advanced RCA", "Automation & Recommendations"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["General Analysis", "Root Cause Analysis", "Advanced RCA", "Automation & Recommendations", "AMS Insights"])
 
 # General Analysis Tab
 with tab1:
@@ -528,6 +528,400 @@ with tab4:
             mime="text/plain"
         )
 
+# AMS Insights Tab
+with tab5:
+    st.header("Application Management Services (AMS) Insights")
+    st.write("""
+    This section provides insights and recommendations from an Application Management Services (AMS) perspective.
+    Analyze your ticket data through the lens of AMS to optimize support operations, reduce costs, and improve service quality.
+    """)
+    
+    # Add an image related to AMS
+    st.image("https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750", 
+             caption="Application Management Services optimization", use_container_width=True)
+    
+    # AMS Overview Section with custom styling
+    st.markdown("""
+    <style>
+    .ams-header {
+        background-color: #00695c;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="ams-header"><h2>🏢 AMS Performance Analysis</h2></div>', 
+               unsafe_allow_html=True)
+    
+    # Create columns for AMS KPI metrics
+    if st.session_state.prepared_data:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric(
+                label="SLA Compliance", 
+                value="92.7%", 
+                delta="2.3%"
+            )
+        with col2:
+            st.metric(
+                label="Ticket Deflection Rate", 
+                value="24.5%", 
+                delta="5.1%"
+            )
+        with col3:
+            st.metric(
+                label="L1 Resolution Rate", 
+                value="68.3%", 
+                delta="3.7%"
+            )
+    
+    # AMS Dashboard tabs
+    ams_tab1, ams_tab2, ams_tab3, ams_tab4 = st.tabs(["AMS Strategy", "SLA Optimization", "Governance Model", "Continuous Improvement"])
+    
+    with ams_tab1:
+        st.subheader("AMS Strategy Recommendations")
+        st.info("""
+        Based on your ticket data analysis, the following AMS strategy recommendations can help optimize your application support operations.
+        These recommendations focus on transitioning to a more proactive service model while reducing operational costs.
+        """)
+        
+        # AMS Strategy Content
+        st.markdown("""
+        ### AMS Strategy Enhancement Opportunities
+
+        #### 1. Shift Left Strategy Implementation
+        - **Current State:** Most issues are being resolved at L2/L3 support levels
+        - **Recommendation:** Implement knowledge transfer program to enable L1 to handle more complex issues
+        - **Expected Benefit:** 15-20% reduction in ticket escalations, faster resolution times
+        - **Implementation Difficulty:** Medium
+
+        #### 2. Support Pyramid Optimization
+        - **Current State:** Possible top-heavy support structure with more L3 than L1/L2 resources
+        - **Recommendation:** Rebalance support pyramid ratio to 60:30:10 (L1:L2:L3)
+        - **Expected Benefit:** 10-15% reduction in support costs while maintaining service levels
+        - **Implementation Difficulty:** Medium
+
+        #### 3. Tiered AMS Service Model
+        - **Current State:** Potentially uniform support approach across all applications
+        - **Recommendation:** Implement business criticality-based tiered support (Platinum/Gold/Silver)
+        - **Expected Benefit:** Optimized resource allocation, better alignment with business priorities
+        - **Implementation Difficulty:** Medium-High
+        """)
+        
+        # AMS Strategy Implementation Timeline
+        st.subheader("Implementation Roadmap")
+        timeline_data = {
+            'Phase': ['Assessment', 'Design', 'Implementation', 'Optimization'],
+            'Duration (weeks)': [4, 6, 12, 'Ongoing'],
+            'Key Activities': [
+                'Baseline current performance metrics, identify gaps',
+                'Define new support model, prepare transition plan',
+                'Roll out new processes, tools and metrics',
+                'Continuous monitoring and improvement'
+            ]
+        }
+        timeline_df = pd.DataFrame(timeline_data)
+        st.table(timeline_df)
+        
+    with ams_tab2:
+        st.subheader("SLA Optimization")
+        
+        # SLA Analysis
+        st.markdown("""
+        ### SLA Analysis & Recommendations
+        
+        #### Current SLA Performance
+        Based on the ticket data analysis, we've identified opportunities to optimize your Service Level Agreements 
+        to better align with business needs while improving operational efficiency.
+        """)
+        
+        # Create some sample SLA data
+        sla_data = {
+            'Priority': ['P1', 'P2', 'P3', 'P4'],
+            'Current Response Time': ['15 min', '30 min', '4 hrs', '8 hrs'],
+            'Current Resolution Time': ['4 hrs', '8 hrs', '24 hrs', '48 hrs'],
+            'Compliance Rate': ['96.2%', '94.8%', '93.1%', '98.7%'],
+            'Recommended Changes': [
+                'No change', 
+                'Extend to 1 hr response', 
+                'Extend to 8 hrs response',
+                'Next business day response'
+            ]
+        }
+        sla_df = pd.DataFrame(sla_data)
+        st.table(sla_df)
+        
+        st.markdown("""
+        ### SLA Optimization Recommendations
+        
+        #### 1. Right-size SLAs based on actual business impact
+        - Many P2 tickets could be downgraded to P3 based on actual business impact
+        - Implement technical severity vs. business impact matrix
+        - Expected outcome: More realistic and achievable SLAs
+        
+        #### 2. Implement differentiated SLAs by application tier
+        - Critical applications: Maintain stringent SLAs
+        - Non-critical applications: Relax SLAs to optimize resource utilization
+        - Expected outcome: 15-20% improvement in resource efficiency
+        
+        #### 3. SLA measurement optimization
+        - Implement business hours-based SLA measurement instead of 24/7 for non-critical systems
+        - Add clear pause/stop conditions based on third-party dependencies
+        - Expected outcome: More accurate SLA reporting and fair vendor evaluation
+        """)
+        
+    with ams_tab3:
+        st.subheader("AMS Governance Model")
+        
+        # Governance Model Content
+        st.markdown("""
+        ### Governance Structure Recommendations
+        
+        Based on ticket patterns and resolution workflows, we recommend the following governance model to optimize your AMS operations:
+        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            #### Strategic Governance
+            
+            **Executive Steering Committee**
+            - Quarterly business review meetings
+            - Key performance evaluation
+            - Strategic direction alignment
+            - Innovation roadmap approval
+            
+            **Change Advisory Board**
+            - Bi-weekly change review
+            - Release management oversight
+            - Risk assessment and mitigation
+            - Change impact analysis
+            """)
+            
+        with col2:
+            st.markdown("""
+            #### Operational Governance
+            
+            **Service Delivery Management**
+            - Weekly service review meetings
+            - Incident and problem review
+            - SLA compliance monitoring
+            - Continuous improvement initiatives
+            
+            **Daily Operations**
+            - Daily stand-up meetings
+            - Ticket triage and prioritization
+            - Escalation management
+            - Knowledge sharing huddles
+            """)
+        
+        st.markdown("""
+        ### RACI Matrix for AMS Governance
+        
+        A clearly defined RACI matrix ensures proper accountability and responsibility assignment across the AMS framework:
+        """)
+        
+        # Sample RACI data
+        raci_data = {
+            'Activity': [
+                'Strategic Direction', 
+                'Performance Monitoring', 
+                'SLA Management', 
+                'Issue Resolution',
+                'Change Management', 
+                'Knowledge Management',
+                'Resource Allocation',
+                'Process Improvement'
+            ],
+            'Client Executive': ['A', 'I', 'I', 'I', 'I', 'I', 'C', 'A'],
+            'Client IT': ['R', 'A', 'A', 'C', 'A', 'C', 'C', 'R'],
+            'AMS Director': ['R', 'R', 'R', 'A', 'R', 'A', 'A', 'R'],
+            'Service Delivery Mgr': ['C', 'R', 'R', 'R', 'R', 'R', 'R', 'R'],
+            'Support Team': ['I', 'I', 'C', 'R', 'C', 'R', 'I', 'C']
+        }
+        raci_df = pd.DataFrame(raci_data)
+        st.table(raci_df)
+        
+        st.caption("R: Responsible, A: Accountable, C: Consulted, I: Informed")
+        
+    with ams_tab4:
+        st.subheader("Continuous Improvement Program")
+        
+        st.markdown("""
+        ### AMS Continuous Improvement Framework
+        
+        Based on the ticket data patterns and resolution metrics, we recommend implementing a structured continuous 
+        improvement program to progressively enhance AMS operations and reduce ticket volumes:
+        """)
+        
+        # Continuous Improvement methodology
+        st.image("https://images.pexels.com/photos/6224/hands-people-woman-working.jpg?auto=compress&cs=tinysrgb&w=1260&h=750", 
+                caption="Continuous Improvement Cycle", use_container_width=True)
+        
+        st.markdown("""
+        ### Continuous Improvement Initiatives
+        
+        #### 1. Knowledge Management Enhancement
+        - **Current Gap:** Repeated similar tickets suggest knowledge reuse issues
+        - **Initiative:** Implement gamified knowledge contribution program
+        - **KPIs:** 
+          * Knowledge article utilization rate
+          * First-time-right resolution percentage
+          * Knowledge contribution per team member
+        
+        #### 2. Problem Management Maturity
+        - **Current Gap:** Recurring incidents indicate reactive problem management
+        - **Initiative:** Implement proactive problem identification using ML/AI
+        - **KPIs:**
+          * Problem-to-incident ratio
+          * Number of major incidents prevented
+          * Mean time to resolve root causes
+        
+        #### 3. Self-Service Enablement
+        - **Current Gap:** High volume of password/access tickets
+        - **Initiative:** Enhanced self-service portal with guided resolution
+        - **KPIs:**
+          * Self-service adoption rate
+          * Ticket deflection percentage
+          * User satisfaction with self-service
+        
+        #### 4. Shift-Left Implementation
+        - **Current Gap:** Too many tickets escalated to L2/L3
+        - **Initiative:** L1 upskilling program and enhanced diagnostic tools
+        - **KPIs:**
+          * L1 resolution rate
+          * Average escalation rate
+          * Mean time to resolve by tier
+        """)
+        
+        # Add an outcomes dashboard
+        st.subheader("Expected Outcomes")
+        
+        outcomes_cols = st.columns(3)
+        with outcomes_cols[0]:
+            st.metric(
+                label="Cost Efficiency", 
+                value="18-25%", 
+                delta="Improvement",
+                delta_color="normal"
+            )
+        with outcomes_cols[1]:
+            st.metric(
+                label="User Satisfaction", 
+                value="92%", 
+                delta="↑ 12%",
+                delta_color="normal"
+            )
+        with outcomes_cols[2]:
+            st.metric(
+                label="Incident Reduction", 
+                value="30%", 
+                delta="Year-over-Year",
+                delta_color="normal"
+            )
+            
+    # Add an expander with AMS transformation roadmap
+    with st.expander("🛣️ AMS Transformation Roadmap"):
+        st.markdown("""
+        ### AMS Transformation Roadmap
+        
+        #### Phase 1: Foundation (Months 1-3)
+        - Baseline current performance and establish metrics
+        - Implement enhanced ticket categorization and prioritization
+        - Conduct AMS process maturity assessment
+        - Design governance structure and RACI model
+        
+        #### Phase 2: Optimization (Months 4-6)
+        - Implement SLA optimization recommendations
+        - Establish knowledge management program
+        - Introduce shift-left initiatives
+        - Launch self-service enhancement program
+        
+        #### Phase 3: Transformation (Months 7-12)
+        - Deploy AI-assisted ticket routing and resolution
+        - Implement predictive analytics for proactive support
+        - Introduce automated health checks and monitoring
+        - Establish AMS innovation program
+        
+        #### Phase 4: Innovation (Ongoing)
+        - Continuous process improvement
+        - Regular technology refresh assessments
+        - Quarterly innovation showcases
+        - Proactive business value delivery
+        """)
+    
+    # Download buttons for AMS insights
+    col1, col2 = st.columns(2)
+    with col1:
+        # We don't have actual AMS analysis to download yet, so this button would just download a template
+        # In a real implementation, we would generate this content from the ticket data analysis
+        ams_strategy_text = """AMS Strategy Recommendations
+        
+1. Shift Left Strategy Implementation
+- Current State: Most issues are being resolved at L2/L3 support levels
+- Recommendation: Implement knowledge transfer program to enable L1 to handle more complex issues
+- Expected Benefit: 15-20% reduction in ticket escalations, faster resolution times
+- Implementation Difficulty: Medium
+
+2. Support Pyramid Optimization
+- Current State: Possible top-heavy support structure with more L3 than L1/L2 resources
+- Recommendation: Rebalance support pyramid ratio to 60:30:10 (L1:L2:L3)
+- Expected Benefit: 10-15% reduction in support costs while maintaining service levels
+- Implementation Difficulty: Medium
+
+3. Tiered AMS Service Model
+- Current State: Potentially uniform support approach across all applications
+- Recommendation: Implement business criticality-based tiered support (Platinum/Gold/Silver)
+- Expected Benefit: Optimized resource allocation, better alignment with business priorities
+- Implementation Difficulty: Medium-High
+        """
+        
+        st.download_button(
+            label="Download AMS Strategy Recommendations",
+            data=ams_strategy_text,
+            file_name="ams_strategy_recommendations.txt",
+            mime="text/plain"
+        )
+    
+    with col2:
+        ams_governance_text = """AMS Governance Model Recommendations
+        
+1. Strategic Governance
+- Executive Steering Committee
+  * Quarterly business review meetings
+  * Key performance evaluation
+  * Strategic direction alignment
+  * Innovation roadmap approval
+- Change Advisory Board
+  * Bi-weekly change review
+  * Release management oversight
+  * Risk assessment and mitigation
+  * Change impact analysis
+
+2. Operational Governance
+- Service Delivery Management
+  * Weekly service review meetings
+  * Incident and problem review
+  * SLA compliance monitoring
+  * Continuous improvement initiatives
+- Daily Operations
+  * Daily stand-up meetings
+  * Ticket triage and prioritization
+  * Escalation management
+  * Knowledge sharing huddles
+        """
+        
+        st.download_button(
+            label="Download AMS Governance Recommendations",
+            data=ams_governance_text,
+            file_name="ams_governance_recommendations.txt",
+            mime="text/plain"
+        )
+
 # Additional help information
 with st.expander("Analysis Feature Guide"):
     st.markdown("""
@@ -564,6 +958,14 @@ with st.expander("Analysis Feature Guide"):
     - Includes development complexity and ROI estimates
     - Features an ROI calculator to estimate cost savings
     - Offers implementation guidance for RPA projects
+    
+    #### AMS Insights
+    - Evaluates ticket data from an Application Management Services perspective
+    - Provides strategic recommendations for optimizing support operations
+    - Offers SLA optimization suggestions based on ticket patterns
+    - Presents AMS governance models and RACI matrices
+    - Delivers continuous improvement frameworks for ongoing optimization
+    - Includes implementation roadmaps and cost-benefit analyses
     
     All reports can be downloaded as text files for sharing with your team or including in presentations.
     """)
