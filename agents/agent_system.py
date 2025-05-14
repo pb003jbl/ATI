@@ -80,14 +80,10 @@ class AgentSystem:
     def setup_agents(self):
         """
         Set up the AutoGen agent system
-        """
-        # Configure LLM for AutoGen
-        llm_config = {
-            "config_list": [{"model": self.groq_config.model}],
-            "temperature": 0.3,
-            "cache_seed": None,
-        }
         
+        Note: We're initializing agents with minimal config to avoid OpenAI API errors.
+        The actual LLM calls will use direct Groq API calls from our custom methods.
+        """
         # Create the user proxy agent
         self.user_proxy = autogen.UserProxyAgent(
             name="User",
@@ -96,17 +92,22 @@ class AgentSystem:
             code_execution_config={"use_docker": False},
         )
         
-        # Create the ticket analyzer agent
+        # Set up a dummy config that won't try to use OpenAI by default
+        self.dummy_config = {
+            "use_llm": False  # This signals AutoGen not to use an LLM
+        }
+        
+        # Create the ticket analyzer agent with the dummy config
         self.ticket_analyzer = autogen.AssistantAgent(
             name="TicketAnalyzer",
-            llm_config=llm_config,
+            llm_config=False,  # Disable LLM usage to avoid OpenAI API errors
             system_message=SYSTEM_PROMPT
         )
         
         # Create the RCA specialist agent
         self.rca_specialist = autogen.AssistantAgent(
             name="RCASpecialist",
-            llm_config=llm_config,
+            llm_config=False,  # Disable LLM usage to avoid OpenAI API errors
             system_message="""You are an expert in Root Cause Analysis for IT incidents. 
             Your role is to analyze ServiceNow ticket data and identify underlying causes of issues.
             Focus on patterns, dependencies, and technical factors that might contribute to problems."""
@@ -115,7 +116,7 @@ class AgentSystem:
         # Create the recommendation agent
         self.recommendation_agent = autogen.AssistantAgent(
             name="RecommendationAgent",
-            llm_config=llm_config,
+            llm_config=False,  # Disable LLM usage to avoid OpenAI API errors
             system_message="""You are an expert in IT service management and resolution strategies.
             Your role is to provide actionable recommendations based on ticket data analysis.
             Focus on practical solutions, best practices, and preventive measures."""
