@@ -252,10 +252,10 @@ with tab3:
                             {"Component": comp, "Count": count}
                             for comp, count in system_components.items()
                         ])
-                    
-                    if not components_df.empty:
-                        components_df = components_df.sort_values("Count", ascending=False).head(8)
-                        st.bar_chart(components_df.set_index("Component"))
+                        
+                        if len(components_df) > 0:
+                            components_df = components_df.sort_values("Count", ascending=False).head(8)
+                            st.bar_chart(components_df.set_index("Component"))
             
             # Error distribution pie chart
             if isinstance(factors, dict) and "common_errors" in factors:
@@ -267,9 +267,9 @@ with tab3:
                          "Count": count}
                         for error, count in errors.items() if count > 0
                     ])
-                
-                if not errors_df.empty:
-                    st.bar_chart(errors_df.set_index("Error Type"))
+                    
+                    if len(errors_df) > 0:
+                        st.bar_chart(errors_df.set_index("Error Type"))
         
         # Download button for advanced RCA report
         advanced_rca_json = json.dumps(st.session_state.advanced_rca_report, default=str, indent=2)
