@@ -133,20 +133,20 @@ class AgentSystem:
         Returns:
             LLM response
         """
-        # Format the data context
+        # Format the data context - using default=str to handle non-serializable objects
         data_context = f"""
         Here's the ServiceNow ticket data summary:
         - Total tickets: {ticket_data.get('total_tickets', 'N/A')}
         - Available columns: {', '.join(ticket_data.get('columns', []))}
         
         Time metrics:
-        {json.dumps(ticket_data.get('time_metrics', {}), indent=2)}
+        {json.dumps(ticket_data.get('time_metrics', {}), indent=2, default=str)}
         
         Category metrics:
-        {json.dumps(ticket_data.get('category_metrics', {}), indent=2)}
+        {json.dumps(ticket_data.get('category_metrics', {}), indent=2, default=str)}
         
         Common keywords in tickets:
-        {json.dumps(ticket_data.get('common_keywords', {}), indent=2)}
+        {json.dumps(ticket_data.get('common_keywords', {}), indent=2, default=str)}
         """
         
         # Combine data context with user query
@@ -174,8 +174,8 @@ class AgentSystem:
         Returns:
             Analysis results as string
         """
-        # Format the data for analysis
-        data_str = json.dumps(ticket_data, indent=2)
+        # Format the data for analysis using default=str to handle non-serializable objects
+        data_str = json.dumps(ticket_data, indent=2, default=str)
         
         # Create the prompt for analysis
         analysis_prompt = DATA_ANALYSIS_PROMPT.format(data=data_str)
@@ -196,8 +196,8 @@ class AgentSystem:
         Returns:
             RCA report as string
         """
-        # Format the data for RCA
-        data_str = json.dumps(ticket_data, indent=2)
+        # Format the data for RCA with default=str to handle non-serializable objects
+        data_str = json.dumps(ticket_data, indent=2, default=str)
         
         # Create the prompt for RCA
         rca_prompt = RCA_PROMPT.format(
@@ -221,8 +221,8 @@ class AgentSystem:
         Returns:
             Recommendations as string
         """
-        # Format the data for recommendations
-        data_str = json.dumps(ticket_data, indent=2)
+        # Format the data for recommendations with default=str to handle non-serializable objects
+        data_str = json.dumps(ticket_data, indent=2, default=str)
         
         # Create the prompt for recommendations
         recommendation_prompt = RECOMMENDATION_PROMPT.format(
@@ -239,38 +239,58 @@ class AgentSystem:
         """
         Run a multi-agent chat to answer a complex query
         
+        Note: Due to the shift to using direct Groq API calls, we're
+        not using the actual AutoGen chat functionality.
+        This is now a direct query to the Groq API.
+        
         Args:
             query: User query
             ticket_data: Dictionary with processed ticket data
             
         Returns:
-            Chat transcript
+            Response from Groq LLM
         """
-        # Format the data context
-        data_str = json.dumps(ticket_data, indent=2)
-        
-        # Initiate the chat
-        self.user_proxy.initiate_chat(
-            self.ticket_analyzer,
-            message=f"""
-            Here is the ServiceNow ticket data:
-            {data_str}
+        # We'll use the direct query method instead since we're not using
+        # the full AutoGen chat functionality
+        try:
+            # Format the data for processing
+            # Use JSON dumps with default=str to handle timestamps and other non-serializable objects
+            data_context = f"""
+            Here is the ServiceNow ticket data summary:
+            - Total tickets: {ticket_data.get('total_tickets', 'N/A')}
+            - Available columns: {', '.join(ticket_data.get('columns', []))}
+            
+            Time metrics:
+            {json.dumps(ticket_data.get('time_metrics', {}), indent=2, default=str)}
+            
+            Category metrics:
+            {json.dumps(ticket_data.get('category_metrics', {}), indent=2, default=str)}
+            
+            Common keywords in tickets:
+            {json.dumps(ticket_data.get('common_keywords', {}), indent=2, default=str)}
+            """
+            
+            # Create the prompt for the multi-agent analysis
+            multi_agent_prompt = f"""
+            {data_context}
             
             User query: {query}
             
-            Please analyze this data and provide a helpful response.
-            Once you're done, include "TERMINATE" at the end of your message.
+            Please analyze this data as if you were a team of expert analysts working together:
+            1. A data analyst who examines patterns in the ticket data
+            2. A service management expert who understands ITIL processes
+            3. A root cause analysis specialist who can identify underlying issues
+            
+            Provide a comprehensive, well-structured response that addresses the query from multiple perspectives.
             """
-        )
-        
-        # Extract the responses from the chat history
-        responses = []
-        for message in self.user_proxy.chat_history[self.ticket_analyzer]:
-            if message["role"] == "assistant":
-                responses.append(message["content"])
-        
-        # Join the responses and remove the termination marker
-        full_response = "\n\n".join(responses)
-        full_response = full_response.replace("TERMINATE", "").strip()
-        
-        return full_response
+            
+            # Get completion from Groq LLM
+            system_prompt = """You are a collaborative team of ServiceNow ticket experts. 
+            Work together to provide comprehensive analysis and insights on the ticket data.
+            Your response should be well-structured, detailed, and actionable."""
+            
+            response = self.groq_config.get_completion(multi_agent_prompt, system_prompt)
+            return response
+            
+        except Exception as e:
+            return f"Error in multi-agent analysis: {str(e)}"

@@ -274,7 +274,7 @@ def prepare_data_for_agents(df):
         df: DataFrame with ticket data
         
     Returns:
-        Dictionary with structured data
+        Dictionary with structured data that is JSON serializable
     """
     # Basic info
     data_dict = {
@@ -282,13 +282,34 @@ def prepare_data_for_agents(df):
         'columns': list(df.columns),
     }
     
+    # Helper function to make values JSON serializable
+    def make_json_serializable(obj):
+        if isinstance(obj, (pd.Timestamp, datetime)):
+            return obj.isoformat()
+        elif isinstance(obj, dict):
+            return {k: make_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [make_json_serializable(item) for item in obj]
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        else:
+            return obj
+    
     # Add sample of tickets (limit to 5 for performance)
+    # Convert to dict and then make values JSON serializable
     sample_data = df.head(5).to_dict(orient='records')
+    sample_data = make_json_serializable(sample_data)
     data_dict['sample_data'] = sample_data
     
     # Add metrics
     time_metrics = get_time_metrics(df)
     category_metrics = get_category_metrics(df)
+    
+    # Make sure all metrics are JSON serializable
+    time_metrics = make_json_serializable(time_metrics)
+    category_metrics = make_json_serializable(category_metrics)
     
     data_dict.update({
         'time_metrics': time_metrics,
