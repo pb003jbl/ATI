@@ -3,7 +3,9 @@ import pandas as pd
 import json
 from utils.data_processor import prepare_data_for_agents
 from agents.agent_system import GroqLLMConfig, AgentSystem
+from utils.rca_analyzer import RCAAnalyzer, format_rca_report_for_display
 import time
+import datetime
 
 st.set_page_config(
     page_title="Advanced Analysis | ServiceNow Ticket Analyzer",
@@ -29,7 +31,7 @@ df = st.session_state.processed_data
 
 # Header
 st.image("https://pixabay.com/get/g7fb6024bedfe3638eb61c3b67870e27bdb8af6c28570c8ae2077160152f48e41e9c772c01e5345bdaa027faf951ec1af2dbdef80739427fb112e3cb832848a77_1280.jpg", 
-         caption="Advanced ServiceNow Ticket Analysis", use_column_width=True)
+         caption="Advanced ServiceNow Ticket Analysis", use_container_width=True)
 
 # Initialize agent system if not already done
 if 'agent_system' not in st.session_state:
@@ -50,9 +52,11 @@ if 'rca_report' not in st.session_state:
     st.session_state.rca_report = None
 if 'recommendations' not in st.session_state:
     st.session_state.recommendations = None
+if 'advanced_rca_report' not in st.session_state:
+    st.session_state.advanced_rca_report = None
 
 # Tabs for different analysis types
-tab1, tab2, tab3 = st.tabs(["General Analysis", "Root Cause Analysis", "Recommendations"])
+tab1, tab2, tab3, tab4 = st.tabs(["General Analysis", "Root Cause Analysis", "Advanced RCA", "Recommendations"])
 
 # General Analysis Tab
 with tab1:
@@ -95,7 +99,7 @@ with tab1:
 with tab2:
     st.header("Root Cause Analysis (RCA)")
     st.write("""
-    Generate a detailed Root Cause Analysis report for specific incidents.
+    Generate a detailed Root Cause Analysis report for specific incidents using the Groq LLM.
     Provide details about the incident to analyze, and the AI will generate a comprehensive RCA report.
     """)
     
@@ -108,7 +112,7 @@ with tab2:
                   "and updates. The system returned to normal operation after a server restart."
     )
     
-    if st.button("Generate RCA Report") and incident_description:
+    if st.button("Generate LLM-Based RCA Report") and incident_description:
         with st.spinner("Generating Root Cause Analysis..."):
             try:
                 # Run the RCA
@@ -134,12 +138,158 @@ with tab2:
         st.download_button(
             label="Download RCA Report",
             data=rca_text,
-            file_name="root_cause_analysis_report.txt",
+            file_name="servicenow_rca_report.txt",
+            mime="text/plain"
+        )
+
+# Advanced RCA Tab (using the detailed RCA module)
+with tab3:
+    st.header("Advanced Root Cause Analysis")
+    st.write("""
+    This advanced RCA module uses statistical analysis and pattern recognition algorithms to analyze your ticket data and provide 
+    a detailed breakdown of incident patterns, contributing factors, and root causes. It offers a more data-driven approach to complement 
+    the LLM-based analysis.
+    """)
+    
+    # Input for incident details
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        adv_incident_description = st.text_area(
+            "Describe the incident for detailed RCA:",
+            height=150,
+            placeholder="Example: On Monday, May 15th, between 9:00 AM and 11:30 AM, users experienced slow response times in the system..."
+        )
+    
+    with col2:
+        st.markdown("### Time Window")
+        time_window = st.slider("Days to analyze before/after incident date", 
+                               min_value=1, max_value=14, value=3)
+        
+        # Add date picker for incident date
+        incident_date = st.date_input(
+            "Incident Date (if known):",
+            value=datetime.date.today()
+        )
+    
+    # Additional options for Advanced RCA
+    with st.expander("Advanced RCA Options"):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            analyze_changes = st.checkbox("Analyze related changes", value=True)
+            analyze_components = st.checkbox("Identify affected components", value=True)
+        
+        with col2:
+            analyze_time_patterns = st.checkbox("Analyze time patterns", value=True)
+            include_sample_tickets = st.checkbox("Include sample tickets", value=True)
+    
+    if st.button("Generate Advanced RCA Report") and adv_incident_description:
+        with st.spinner("Performing detailed Root Cause Analysis..."):
+            try:
+                # Initialize the RCA analyzer
+                rca_analyzer = RCAAnalyzer(df)
+                
+                # Generate the RCA report
+                advanced_rca_report = rca_analyzer.generate_rca_report(adv_incident_description)
+                
+                # Store the result
+                st.session_state.advanced_rca_report = advanced_rca_report
+                
+                st.success("Advanced RCA report generated!")
+            except Exception as e:
+                st.error(f"Error during advanced RCA generation: {str(e)}")
+    
+    # Display Advanced RCA results if available
+    if st.session_state.advanced_rca_report:
+        st.subheader("Advanced Root Cause Analysis Report")
+        
+        # Format the report for display
+        formatted_report = format_rca_report_for_display(st.session_state.advanced_rca_report)
+        st.markdown(formatted_report)
+        
+        # Display visualizations based on the RCA data
+        if st.session_state.advanced_rca_report.get("status") != "insufficient_data":
+            st.subheader("RCA Visualizations")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Timeline visualization
+                if st.session_state.advanced_rca_report.get("timeline"):
+                    st.subheader("Incident Timeline")
+                    
+                    # Extract timeline data
+                    timeline_data = st.session_state.advanced_rca_report.get("timeline", [])
+                    if timeline_data:
+                        # Create a dataframe from the timeline
+                        timeline_df = pd.DataFrame([
+                            {
+                                'date': event.get('timestamp') if isinstance(event, dict) else None,
+                                'event': f"{event.get('event_type', '')}: {event.get('ticket_id', '')}" if isinstance(event, dict) else '',
+                                'description': event.get('description', '') if isinstance(event, dict) else ''
+                            }
+                            for event in timeline_data if isinstance(event, dict) and hasattr(event.get('timestamp'), 'strftime')
+                        ])
+                        
+                        if not timeline_df.empty:
+                            # Display as a table
+                            st.dataframe(
+                                timeline_df.sort_values('date'), 
+                                use_container_width=True
+                            )
+            
+            with col2:
+                # Contributing factors visualization
+                factors = st.session_state.advanced_rca_report.get("contributing_factors", {})
+                if isinstance(factors, dict) and "system_components" in factors:
+                    system_components = factors["system_components"]
+                    if isinstance(system_components, dict) and system_components:
+                        st.subheader("Affected Components")
+                        
+                        # Create a horizontal bar chart
+                        components_df = pd.DataFrame([
+                            {"Component": comp, "Count": count}
+                            for comp, count in system_components.items()
+                        ])
+                    
+                    if not components_df.empty:
+                        components_df = components_df.sort_values("Count", ascending=False).head(8)
+                        st.bar_chart(components_df.set_index("Component"))
+            
+            # Error distribution pie chart
+            if isinstance(factors, dict) and "common_errors" in factors:
+                errors = factors["common_errors"]
+                if isinstance(errors, dict) and errors:
+                    st.subheader("Common Error Types")
+                    errors_df = pd.DataFrame([
+                        {"Error Type": error.replace("_", " ").title() if isinstance(error, str) else str(error).title(), 
+                         "Count": count}
+                        for error, count in errors.items() if count > 0
+                    ])
+                
+                if not errors_df.empty:
+                    st.bar_chart(errors_df.set_index("Error Type"))
+        
+        # Download button for advanced RCA report
+        advanced_rca_json = json.dumps(st.session_state.advanced_rca_report, default=str, indent=2)
+        st.download_button(
+            label="Download Advanced RCA Report",
+            data=advanced_rca_json,
+            file_name="advanced_rca_report.json",
+            mime="application/json"
+        )
+        
+        # Also provide a text version
+        st.download_button(
+            label="Download Formatted RCA Report",
+            data=formatted_report,
+            file_name="advanced_rca_report.txt",
             mime="text/plain"
         )
 
 # Recommendations Tab
-with tab3:
+with tab4:
     st.header("Ticket Resolution Recommendations")
     st.write("""
     Generate smart recommendations for improving your service desk operations based on ticket data analysis.
@@ -197,6 +347,12 @@ with st.expander("Analysis Feature Guide"):
     - Enter a detailed description of the incident you want to analyze
     - The AI will generate a comprehensive RCA report
     - Include as much detail as possible for better results: dates, times, symptoms, affected systems, etc.
+    
+    #### Advanced RCA Module
+    - Data-driven approach to Root Cause Analysis
+    - Uses statistical methods to identify patterns and correlations
+    - Provides detailed visualizations and contributing factor analysis
+    - Combines multiple analytical approaches for a more comprehensive analysis
     
     #### Recommendations
     - Generates actionable suggestions based on your ticket data
