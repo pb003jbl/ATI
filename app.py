@@ -114,41 +114,16 @@ if st.session_state.file_uploaded and not st.session_state.field_mapping_done:
         st.info("Please map at least the required fields (number, short_description, status, priority) to continue.")
         
 elif st.session_state.file_uploaded and st.session_state.field_mapping_done:
-    # Dashboard preview in the main area when data is loaded and mapped
-    st.header("Quick Overview")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Basic ticket metrics
-        st.subheader("Ticket Metrics")
-        if 'status' in st.session_state.processed_data.columns:
-            status_counts = st.session_state.processed_data['status'].value_counts()
-            open_tickets = status_counts.get('Open', 0) + status_counts.get('In Progress', 0)
-            closed_tickets = status_counts.get('Closed', 0) + status_counts.get('Resolved', 0)
-            
-            st.metric("Open Tickets", open_tickets)
-            st.metric("Closed Tickets", closed_tickets)
-            
-            if 'created_at' in st.session_state.processed_data.columns:
-                recent_tickets = st.session_state.processed_data[
-                    pd.to_datetime(st.session_state.processed_data['created_at']) > 
-                    pd.Timestamp.now() - pd.Timedelta(days=7)
-                ].shape[0]
-                st.metric("New Tickets (Last 7 Days)", recent_tickets)
-    
-    with col2:
-        # Preview chart
-        st.subheader("Ticket Status Overview")
-        if 'status' in st.session_state.processed_data.columns:
-            chart = create_ticket_overview_chart(st.session_state.processed_data)
-            st.plotly_chart(chart, use_container_width=True)
+    # Render enhanced dashboard
+    from components.dashboard_component import render_main_dashboard
+    render_main_dashboard(st.session_state.processed_data)
     
     # Navigation instructions
     st.info("""
     Navigate to the pages in the sidebar to:
-    - View the detailed Dashboard for more visualizations
     - Use the Chatbot to query your ticket data
     - Run deep Analysis for RCA and recommendations
+    - View the Data Mapping summary to adjust field mappings
     """)
     
     # Data and mapping summary
