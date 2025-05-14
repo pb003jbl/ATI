@@ -373,8 +373,116 @@ with tab4:
                 # Skip if there's any error calculating the metrics
                 pass
         
+        # Add a section specifically for RPA use cases
+        st.markdown("""
+        <style>
+        .rpa-section {
+            background-color: #6200EA;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('<div class="rpa-section"><h2>🤖 RPA Automation Use Cases</h2></div>', 
+                   unsafe_allow_html=True)
+        
+        st.info("""
+        This section identifies specific Robotic Process Automation (RPA) use cases based on the patterns found in your ticket data.
+        Each use case includes specific process flows, recommended RPA tools, and estimated ROI.
+        
+        RPA is particularly effective for:
+        - High-volume, repetitive IT tasks
+        - Rule-based processes with structured data
+        - Cross-system workflows that require multiple application interactions
+        """)
+        
+        # Create tabs for different aspects of RPA automation
+        rpa_tab1, rpa_tab2, rpa_tab3 = st.tabs(["RPA Recommendations", "Implementation Guide", "ROI Calculator"])
+        
+        with rpa_tab1:
+            st.write("The RPA recommendations will appear here after analysis is complete.")
+            
+            # This area will be populated with specific RPA recommendations from the LLM
+            if st.session_state.recommendations:
+                # Extract RPA specific content (simplified example - in practice, we'd use regex or other parsing)
+                if "RPA USE CASES" in st.session_state.recommendations:
+                    try:
+                        # This is a simplified approach - in production, we'd use a more robust parsing method
+                        rpa_start = st.session_state.recommendations.find("RPA USE CASES")
+                        next_heading = st.session_state.recommendations.find("PROCESS IMPROVEMENTS", rpa_start)
+                        if next_heading > 0:
+                            rpa_content = st.session_state.recommendations[rpa_start:next_heading]
+                        else:
+                            rpa_content = st.session_state.recommendations[rpa_start:]
+                        
+                        st.markdown(rpa_content)
+                    except:
+                        # If parsing fails, just show a message
+                        st.write("RPA recommendations are included in the full analysis above.")
+        
+        with rpa_tab2:
+            st.markdown("""
+            ### RPA Implementation Guide
+            
+            #### 1. Discovery & Assessment
+            - Document the exact process steps (Process Definition Document)
+            - Measure current process metrics (time, error rate, cost)
+            - Assess technical feasibility for automation
+            
+            #### 2. Bot Development
+            - Select appropriate RPA platform based on use case
+            - Develop process automation using selected RPA tool
+            - Test automations in controlled environment
+            
+            #### 3. Deployment & Monitoring
+            - Deploy RPA bots in production environment
+            - Monitor bot performance and handle exceptions
+            - Measure ROI and process improvements
+            
+            #### 4. Scaling & Optimization
+            - Identify additional processes for automation
+            - Create a Center of Excellence for RPA governance
+            - Implement continuous improvement for existing bots
+            """)
+        
+        with rpa_tab3:
+            st.markdown("### RPA ROI Calculator")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("#### Input Parameters")
+                manual_time = st.number_input("Average manual processing time (minutes)", min_value=1, value=15)
+                ticket_volume = st.number_input("Monthly ticket volume", min_value=1, value=500)
+                agent_cost = st.number_input("Hourly agent cost ($)", min_value=1, value=25)
+                automation_rate = st.slider("Automation success rate (%)", min_value=50, max_value=100, value=85)
+                
+            with col2:
+                st.markdown("#### Estimated ROI")
+                # Calculate ROI metrics
+                monthly_hours_saved = (manual_time * ticket_volume * (automation_rate/100)) / 60
+                monthly_cost_savings = monthly_hours_saved * agent_cost
+                annual_savings = monthly_cost_savings * 12
+                
+                # Implementation costs (simplified)
+                implementation_cost = 20000 + (monthly_hours_saved * 100)  # Very simplified estimate
+                
+                # ROI calculation
+                roi_months = implementation_cost / monthly_cost_savings
+                
+                # Display metrics
+                st.metric("Monthly Hours Saved", f"{monthly_hours_saved:.1f} hrs")
+                st.metric("Monthly Cost Savings", f"${monthly_cost_savings:.2f}")
+                st.metric("Annual Savings", f"${annual_savings:.2f}")
+                st.metric("Estimated ROI Timeline", f"{roi_months:.1f} months")
+            
+            st.caption("Note: This is a simplified ROI calculator. Actual results may vary based on specific process complexity, exception handling needs, and maintenance requirements.")
+        
         # Add an expander with automation tools & technologies
-        with st.expander("🛠️ Recommended Automation Tools & Technologies"):
+        with st.expander("🛠️ Recommended Automation & RPA Tools"):
             st.markdown("""
             ### ServiceNow Automation Tools
 
@@ -388,15 +496,27 @@ with tab4:
                - Automate data sharing between platforms
                - Reduce duplicate ticket entry across systems
 
-            3. **Performance Analytics**
-               - Monitor automation effectiveness
-               - Track KPIs impacted by automation
-               - Identify new automation opportunities
+            ### RPA Platforms
 
-            4. **Virtual Agent**
-               - AI-powered chatbot for common service requests
-               - Self-service portal for users
-               - Reduce ticket volume for common issues
+            1. **UiPath**
+               - Enterprise RPA platform with strong screen scraping capabilities
+               - Excellent for desktop automation and legacy system integration
+               - Features include AI Center, Process Mining, and Task Capture
+
+            2. **Automation Anywhere**
+               - Cloud-native RPA platform with IQ Bot for unstructured data
+               - Strong security features for enterprise deployments
+               - Digital workforce analytics for bot performance monitoring
+
+            3. **Blue Prism**
+               - Enterprise-grade RPA with strong governance and compliance features
+               - Object-oriented development approach for scalable automation
+               - Secure, connected-RPA with centralized release management
+
+            4. **Microsoft Power Automate**
+               - Seamless integration with Microsoft products
+               - Low-code/no-code approach accessible to business users
+               - AI Builder for intelligent document processing
             """)
         
         # Download button for recommendations
@@ -436,6 +556,14 @@ with st.expander("Analysis Feature Guide"):
     - Highlights self-service options to reduce manual ticket creation
     - Provides implementation difficulty ratings for prioritization
     - For best results, run the General Analysis first
+    
+    #### RPA Use Cases
+    - Identifies specific processes ideal for Robotic Process Automation (RPA)
+    - Provides detailed process flows suitable for RPA implementation
+    - Recommends specific RPA platforms (UiPath, Blue Prism, Automation Anywhere, etc.)
+    - Includes development complexity and ROI estimates
+    - Features an ROI calculator to estimate cost savings
+    - Offers implementation guidance for RPA projects
     
     All reports can be downloaded as text files for sharing with your team or including in presentations.
     """)
