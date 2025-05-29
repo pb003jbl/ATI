@@ -8,7 +8,7 @@ import time
 
 # Configure the page
 st.set_page_config(
-    page_title="ServiceNow Ticket Analyzer",
+    page_title="ITSM Ticket Analyzer",
     page_icon="🎫",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -29,13 +29,13 @@ if 'openai_api_key' not in st.session_state:
     st.session_state.openai_api_key = os.getenv("OPENAI_API_KEY", "")
 
 # Main header with styling
-st.title("ServiceNow Ticket Analyzer")
+st.title("ITSM Ticket Analyzer")
 
 # Header image
 col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.image("https://pixabay.com/get/g016c0c0b10bf6f695a5680ed6ceefc7010f9ecd783ad997c2574c1ec9f09005916bdbb9e2df1c3f26290a23a6c0ad6d9cc1b8bb55ec8d96b529e614a25be4ee1_1280.jpg", 
-             caption="Intelligent Ticket Analysis Platform", use_container_width=True)
+# with col2:
+#     st.image("https://pixabay.com/get/g016c0c0b10bf6f695a5680ed6ceefc7010f9ecd783ad997c2574c1ec9f09005916bdbb9e2df1c3f26290a23a6c0ad6d9cc1b8bb55ec8d96b529e614a25be4ee1_1280.jpg", 
+#              caption="Intelligent Ticket Analysis Platform", use_container_width=True)
 
 # Description
 st.markdown("""

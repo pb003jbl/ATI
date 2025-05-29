@@ -131,6 +131,13 @@ def create_priority_chart(df):
         )
         return fig
     
+    num_priority_colors = [
+    "rgb(255,0,0)",  # Critical
+    "rgb(255,128,0)",  # High
+    "rgb(255,255,0)",  # Moderate
+    "rgb(0,255,0)",  # Low
+    ]
+    
     # Count tickets by priority
     priority_counts = df['priority'].value_counts().reset_index()
     priority_counts.columns = ['Priority', 'Count']
@@ -146,7 +153,8 @@ def create_priority_chart(df):
     # Create color scale based on priority (red for high priority, green for low)
     if priority_counts['Priority'].dtype in [np.int64, np.float64]:
         # Use a color scale for numeric priorities
-        color_scale = px.colors.diverging.RdYlGn_r
+        # color_scale = px.colors.diverging.RdYlGn_r
+        color_scale = num_priority_colors
     else:
         # Use a discrete color map for non-numeric priorities
         color_scale = px.colors.qualitative.Set1

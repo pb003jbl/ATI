@@ -26,6 +26,22 @@ def load_data(uploaded_file):
     
     return df
 
+def standardize_priority(df, column_name='priority'):
+    priority_mapping = {
+        '1-critical': 1, '1': 1, 'critical': 1,
+        '2-high': 2, '2': 2, 'high': 2,
+        '3-moderate': 3, '3': 3, 'moderate': 3,
+        '4-low': 4, '4': 4, 'low': 4
+    }
+
+    df[column_name] = df[column_name].astype(str).str.replace(' ', '').str.strip().str.lower()
+    df[column_name] = df[column_name].apply(lambda x: priority_mapping.get(x, x))
+
+    # try to convert to numeric
+    df[column_name] = pd.to_numeric(df[column_name], errors='coerce')
+ 
+    return df
+
 def preprocess_data(df):
     """
     Preprocess the ServiceNow ticket data
@@ -115,25 +131,26 @@ def preprocess_data(df):
     if 'priority' in processed_df.columns:
         # Try to convert to numeric if possible
         try:
-            processed_df['priority'] = pd.to_numeric(processed_df['priority'], errors='coerce')
+            processed_df = standardize_priority(processed_df, 'priority')
+            # processed_df['priority'] = pd.to_numeric(processed_df['priority'], errors='coerce')
         except:
             pass
         
         # If the priority is not numeric, try to map common values
-        if processed_df['priority'].dtype == 'object':
-            priority_mapping = {
-                'critical': 1,
-                'high': 2,
-                'medium': 3,
-                'normal': 3,
-                'low': 4,
-                'planning': 5
-            }
+        # if processed_df['priority'].dtype == 'object':
+        #     priority_mapping = {
+        #         'critical': 1,
+        #         'high': 2,
+        #         'medium': 3,
+        #         'normal': 3,
+        #         'low': 4,
+        #         'planning': 5
+        #     }
             
-            processed_df['priority'] = processed_df['priority'].astype(str).str.lower()
-            processed_df['priority'] = processed_df['priority'].map(
-                lambda x: priority_mapping.get(x, x)
-            )
+        #     processed_df['priority'] = processed_df['priority'].astype(str).str.lower()
+        #     processed_df['priority'] = processed_df['priority'].map(
+        #         lambda x: priority_mapping.get(x, x)
+        #     )
     
     return processed_df
 
