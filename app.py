@@ -8,7 +8,7 @@ import time
 
 # Configure the page
 st.set_page_config(
-    page_title="ITSM Ticket Analyzer",
+    page_title="Ticket Intelligence",
     page_icon="🎫",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -29,7 +29,7 @@ if 'openai_api_key' not in st.session_state:
     st.session_state.openai_api_key = os.getenv("OPENAI_API_KEY", "")
 
 # Main header with styling
-st.title("ITSM Ticket Analyzer")
+st.title("Ticket Intelligence")
 
 # Header image
 col1, col2, col3 = st.columns([1, 2, 1])
@@ -39,7 +39,7 @@ col1, col2, col3 = st.columns([1, 2, 1])
 
 # Description
 st.markdown("""
-This platform helps you analyze your ServiceNow ticket data using advanced AI techniques.
+This Ticket Intelligence platform helps you analyze your ServiceNow ticket data using advanced AI techniques.
 Upload your ticket data and get intelligent insights, root cause analysis, and resolution recommendations.
 """)
 
@@ -156,7 +156,7 @@ elif st.session_state.file_uploaded and st.session_state.field_mapping_done:
     
 else:
     # Welcome screen with features when no data is loaded
-    st.header("Welcome to ServiceNow Ticket Analyzer")
+    st.header("Welcome to Ticket Intelligence System")
     
     # Features introduction with images
     col1, col2 = st.columns(2)
